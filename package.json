@@ -2,7 +2,7 @@
   "name": "tool-lms",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://github.com/cmmbhnit/Text-Replacement-Tool.git",
+  "homepage": "https://cmmbhnit.github.io/Text-Replacement-Tool/",
   "dependencies": {
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
