@@ -12,44 +12,49 @@ function App() {
   const numbers = useMemo(() => {
     return [
       ...new Set(
-        inputText.match(/\((\d+)\)/g)?.map((num) => num.replace(/[()]/g, "")) ||
-        []
+        inputText.match(/\((\d+)\)/g)?.map((num) => num.replace(/[()]/g, "")) || []
       ),
     ];
   }, [inputText]);
 
   useEffect(() => {
-    let defaultAnswers = {};
-    numbers.forEach((num) => {
-      defaultAnswers[num] = answers[num] || "";
+    setAnswers((prevAnswers) => {
+      let updatedAnswers = { ...prevAnswers };
+      numbers.forEach((num) => {
+        if (!(num in updatedAnswers)) {
+          updatedAnswers[num] = "";
+        }
+      });
+      return updatedAnswers;
     });
-    setAnswers(defaultAnswers);
   }, [numbers]);
 
-  useEffect(() => {
-    const optionMatches = inputText.match(/(\d+)\.\n([A-C]\.\s*[^\n]+\n?)+/g);
+  const extractAnswerOptions = (text) => {
+    const optionMatches = text.match(/(\d+)\.\n(?:[A-C]\.\s*.+\n?)+/g);
     let options = {};
     if (optionMatches) {
       optionMatches.forEach((match) => {
-        const lines = match.split("\n").filter(Boolean);
-        const key = lines[0].split(".")[0].trim();
-        options[key] = lines
-          .slice(1)
-          .map((line) => line.replace(/^[A-C]\./, "").trim());
+        const lines = match.split(/\n+/).filter(Boolean);
+        const key = lines[0].match(/\d+/)?.[0];
+        options[key] = lines.slice(1).map((line) => line.replace(/^[A-C]\./, "").trim());
       });
     }
-    setAnswerOptions(options);
+    return options;
+  };
+
+  useEffect(() => {
+    setAnswerOptions(extractAnswerOptions(inputText));
   }, [inputText]);
 
   const handleAnswerChange = (num, value) => {
-    setAnswers((prev) => ({ ...prev, [num]: value }));
+    setAnswers((prev) => ({
+      ...prev,
+      [num]: value === "custom" ? prev[num] || "" : value,
+    }));
   };
 
   const replaceNumbersWithAnswers = (text, answers) => {
-    return text.replace(
-      /\((\d+)\)/g,
-      (match, number) => `{=${answers[number] || match}}`
-    );
+    return text.replace(/\((\d+)\)/g, (match, number) => `{=${answers[number] || match}}`);
   };
 
   const handleReplace = () => {
@@ -61,10 +66,15 @@ function App() {
     setOutputText(replacedText);
     setSentences(
       replacedText
-        .split(/\.+/)
-        .filter((sentence) => sentence.trim() !== "")
+        .split(/(?<!\b[A-Za-z])\.\s+/)
+        .filter((sentence) => sentence.includes("{="))
         .map((sentence) => sentence.trim() + ".")
     );
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+    alert("Đã sao chép!");
   };
 
   return (
@@ -110,14 +120,21 @@ function App() {
           <p>Không có số nào trong văn bản.</p>
         )}
       </div>
-      <button
-        onClick={handleReplace}
-        style={{ marginTop: "10px", padding: "8px" }}
-      >
+      <button onClick={handleReplace} style={{ marginTop: "10px", padding: "8px" }}>
         Replace Text
       </button>
       <h3>Output:</h3>
-      <p style={{ background: "#f4f4f4", padding: "10px" }}>{outputText}</p>
+      <p style={{ background: "#f4f4f4", padding: "10px" }}>{sentences.join(" ")}</p>
+      <button onClick={() => copyToClipboard(sentences.join(" "))} style={{ marginTop: "10px", padding: "8px" }}>
+        Copy Output
+      </button>
+      <h3>Sentences:</h3>
+      {sentences.map((sentence, index) => (
+        <div key={index} style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}>
+          <p style={{ margin: "0 10px 0 0" }}>{sentence}</p>
+          <button onClick={() => copyToClipboard(sentence)} style={{ padding: "5px" }}>Copy</button>
+        </div>
+      ))}
     </div>
   );
 }
