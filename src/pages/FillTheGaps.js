@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 
-function FillTheBlank() {
+function FillTheGaps() {
     const [inputText, setInputText] = useState(
         "Sehr geehrter Herr Schmidt, im Januar hatte ich bei (21) für mich und meine Familie einen Flug nach Indien gebucht. Leider entsprach unser Flug überhaupt nicht dem, (22) bei der Buchung am Telefon ausgemacht worden war."
     );
@@ -60,7 +60,7 @@ function FillTheBlank() {
 
     return (
         <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-            <h2>Text Replacement Tool</h2>
+            <h2>Fill The Gaps Tool</h2>
             <textarea
                 rows="10"
                 cols="50"
@@ -122,4 +122,4 @@ function FillTheBlank() {
     );
 }
 
-export default FillTheBlank;
+export default FillTheGaps;
